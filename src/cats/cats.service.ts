@@ -30,4 +30,20 @@ export class CatsService {
 
     return createCat;
   }
+
+  async uploadImg(cat: CatResponseDto, file: Express.Multer.File) {
+    const fileName = `http://localhost:3000/media/cats/${file.filename}`;
+    console.log(fileName);
+    const newCat = await this.CatsRepository.findByIdAndUpdateImg(
+      cat.id,
+      fileName,
+    );
+    console.log(newCat);
+    return newCat;
+  }
+
+  async getAllCat() {
+    const AllCat = await this.CatsRepository.findAllCat();
+    return AllCat;
+  }
 }

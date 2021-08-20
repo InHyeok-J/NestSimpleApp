@@ -2,20 +2,17 @@ import { HttpExceptionFilter } from './common/exceptions/http-exception.filter';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  const config = new DocumentBuilder()
-    .setTitle('Nest Simple APp')
-    .setDescription('cat crud and auth')
-    .setVersion('1.0,0')
-    .build();
-  const document: OpenAPIObject = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  app.useStaticAssets(path.join(__dirname, './common', 'uploads'), {
+    prefix: '/media',
+  });
 
   app.enableCors({
     origin: true, //개발끝나고 특정 url을 적어줘야 함.

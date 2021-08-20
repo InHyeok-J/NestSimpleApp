@@ -9,7 +9,7 @@ import { CatsRepository } from 'src/repository/cats.repository';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt', session: false }),
     JwtModule.register({
-      secret: 'secret',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1y' },
     }),
   ],

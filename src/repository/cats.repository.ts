@@ -48,4 +48,64 @@ export class CatsRepository {
       throw new HttpException('db Error', 400);
     }
   }
+
+  async findCatByIdWithoutPassword(id: number): Promise<CatResponseDto> {
+    try {
+      return await this.prisma.cat.findUnique({
+        where: {
+          id,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          imgUrl: true,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('db Error', 400);
+    }
+  }
+
+  async findByIdAndUpdateImg(
+    id: number,
+    fileName: string,
+  ): Promise<CatResponseDto> {
+    try {
+      return await this.prisma.cat.update({
+        where: {
+          id,
+        },
+        data: {
+          imgUrl: fileName,
+        },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          imgUrl: true,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('db Error', 400);
+    }
+  }
+
+  async findAllCat(): Promise<any> {
+    try {
+      return await this.prisma.cat.findMany({
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          imgUrl: true,
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      throw new HttpException('db Error', 400);
+    }
+  }
 }

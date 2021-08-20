@@ -1,3 +1,5 @@
+import { multerOptions } from './../common/utils/multer.options';
+import { JwtAuthGuard } from './../auth/jwt/jwt.guard';
 import { LoginRequestDto } from './../auth/dto/login.request.dto';
 import { AuthService } from './../auth/auth.service';
 import { CatResponseDto } from './dto/cat.response.dto';
@@ -6,16 +8,17 @@ import { SuccessInterceptor } from './../common/interceptors/success.interceptor
 import { CatsService } from './cats.service';
 import {
   Controller,
-  Delete,
   Get,
-  Patch,
   Post,
   Put,
-  HttpException,
   UseInterceptors,
   Body,
+  UseGuards,
+  UploadedFile,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { CurrentUser } from 'src/common/decorators/user.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('cats')
 @UseInterceptors(SuccessInterceptor)
@@ -25,10 +28,15 @@ export class CatsController {
     private readonly authService: AuthService,
   ) {}
 
-  @ApiOperation({ summary: '전체 고양이 조회' })
+  @Get('all')
+  getAllcat() {
+    return this.catsService.getAllCat();
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get()
-  getAllCat() {
-    return 'get all cats';
+  getCurrentCat(@CurrentUser() cat: CatResponseDto) {
+    return cat;
   }
 
   @Get(':id')
@@ -36,32 +44,26 @@ export class CatsController {
     return 'get One Cat';
   }
 
-  @ApiResponse({
-    status: 500,
-    description: 'Server Error..',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '성공',
-    type: CatResponseDto,
-  })
-  @ApiOperation({ summary: '회원가입' })
   @Post('signup')
   async signUp(@Body() body: CatRequestDto) {
     return await this.catsService.signUp(body);
   }
 
-  @ApiOperation({ summary: '로그인' })
   @Post('login')
   async login(@Body() body: LoginRequestDto) {
     console.log(body);
     return await this.authService.jwtLogIn(body);
   }
 
-  @ApiOperation({ summary: '로그아웃' })
-  @Get()
-  loggout() {
-    return 'get all cats';
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file', multerOptions('cats')))
+  @UseGuards(JwtAuthGuard)
+  uploadCatImg(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() cat: CatResponseDto,
+  ) {
+    // return { image: `http://localhost:3000/media/cats/${file.filename}` };
+    return this.catsService.uploadImg(cat, file);
   }
 
   @Put(':id')
